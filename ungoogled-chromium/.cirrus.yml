@@ -1,0 +1,42 @@
+container:
+    dockerfile: .cirrus_Dockerfile
+
+code_check_task:
+    pip_cache:
+        folder: ~/.cache/pip
+        fingerprint_script: cat .cirrus_requirements.txt
+        populate_script: pip install -r .cirrus_requirements.txt
+    pip_install_script:
+        # Needed in order for yapf to be fully installed
+        - pip install -r .cirrus_requirements.txt
+    utils_script:
+        - python3 -m yapf --style '.style.yapf' -e '*/third_party/*' -rpd utils
+        - ./devutils/run_utils_pylint.py --hide-fixme
+        - ./devutils/run_utils_tests.sh
+    devutils_script:
+        - python3 -m yapf --style '.style.yapf' -e '*/third_party/*' -rpd devutils
+        - ./devutils/run_devutils_pylint.py --hide-fixme
+        - ./devutils/run_devutils_tests.sh
+
+validate_config_task:
+    validate_config_script: ./devutils/validate_config.py
+
+validate_with_source_task:
+    chromium_download_cache:
+        folder: chromium_download_cache
+        fingerprint_script: cat chromium_version.txt
+        populate_script:
+            # This directory will not exist when this is called, unless cach retrieval
+            # fails and leaves partially-complete files around.
+            - rm -rf chromium_download_cache || true
+            - mkdir chromium_download_cache
+            - ./utils/downloads.py retrieve -i downloads.ini -c chromium_download_cache
+    unpack_source_script:
+        - ./utils/downloads.py unpack -i downloads.ini -c chromium_download_cache chromium_src
+    validate_patches_script:
+        - ./devutils/validate_patches.py -l chromium_src
+    validate_lists_script:
+        # NOTE: This check is prone to false positives, but not false negatives.
+        - ./devutils/check_files_exist.py chromium_src pruning.list domain_substitution.list
+
+# vim: set expandtab shiftwidth=4 softtabstop=4:
