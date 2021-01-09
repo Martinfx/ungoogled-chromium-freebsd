@@ -40,6 +40,6 @@ export CFLAGS+=-resource-dir=$("$CC" --print-resource-dir) \
 
 cd "$_src_dir"
 
-./tools/gn/bootstrap/bootstrap.py -o out/Release/gn --skip-generate-buildfiles
+./tools/gn/bootstrap/bootstrap.py -o out/Release/gn
 ./out/Release/gn gen out/Release --fail-on-unused-args
 ninja -C out/Release chrome chrome_sandbox chromedriver
