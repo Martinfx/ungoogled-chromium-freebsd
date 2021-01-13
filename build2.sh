@@ -41,4 +41,4 @@ cd "$_src_dir"
 
 ./tools/gn/bootstrap/bootstrap.py -o out/Release/gn
 ./out/Release/gn gen out/Release --fail-on-unused-args
-ninja -C out/Release chrome chrome_sandbox chromedriver
+ninja -v -C out/Release chrome chrome_sandbox chromedriver
